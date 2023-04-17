@@ -18,7 +18,7 @@ public class Box<T>{
 Box<String> stringBox = new Box<String>();
 Box<Integer> integerBox = new Box<Integer>();
 ```
-البته از جاوای 7 به بعد میتوان به شکل زیر نیز شیی سازی از کلاس های جنریک را انجام داد:
+از جاوای 7 به بعد میتوان به شکل زیر نیز شیی سازی از کلاس های جنریک را انجام داد:
 ```java
 Box<String> stringBox = new Box<>();
 Box<Integer> integerBox = new Box<>();
