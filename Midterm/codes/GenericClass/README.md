@@ -34,3 +34,18 @@ System.out.println(stringBox.get());
 
 * علاوه بر این کلاس های جنریک، اینترفیس های جنریک و توابع جنریک نیز وجود دارند.
 * تایپپ ها (از جمله T درین مثال) میتواند کلاس یا اینترفیس باشد.
+
+به عنوان مثالی از ارث بری تایپ ها فرض کنید به آرایه ای از تایپی نیاز داریم که عددی باشد. یعنی Integer یا Float یا Double. درین مورد مثلا اگر T این تایپ باشد، پیاده سازی یک متد می تواند به دو روش زیر باشد:
+
+```java
+public <T extends Number> void genericFunction(List<T> list){
+    ...
+}
+```
+
+```java
+public genericFunction void (List<? extends Number> list){
+    ...
+}
+```
+**البته دقت داشته باشید که برای استفاده از Number باید java.lang.Number را import کرده باشید.**
