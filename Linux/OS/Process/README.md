@@ -108,8 +108,102 @@ PPID: 10481
 ## | Orphan Processes
 دیدم که تقریبا تمام پراسس ها یک پراسس والد دارند. حال فرض کنید پراسسی که والد پراسس دیگری بوده است از بین برود. مثلا شما با ترمینال vscode را اجرا کرده اید و ترمینال را می بندید. اتفاقی که می افتد این است که یک پراسس بدون والد ایجاد می شود. به این نوع پراسس هایی پراسس یتیم یا orphan گفته می شود.
 
-نکته مهم این است که در لینوکس، با یتیم شدن یک پراسس، پراسس init توسط سیستم عامل به عنوان پراسس والد جایگزین می شود. یعنی پراسس یتیم توسط پراسس init به فرزندی برداشته می شود و از یتیمی خارج می شود!
+نکته مهم این است که در لینوکس(نسخه های قدیمی تر)، با یتیم شدن یک پراسس، پراسس init توسط سیستم عامل به عنوان پراسس والد جایگزین می شود. یعنی پراسس یتیم توسط پراسس init به فرزندی برداشته می شود و از یتیمی خارج می شود!
 
+در لینوکس های امروزی اما قضیه کمی پیچیده تر بوده و دیگر یک پراسس پایه به اسم init نداریم.
+بلکه چنیدن پراسس systemd داریم که وظیفه مدیریت دیگر پراسس ها را به عهده دارند.
+میتوانید با اجرای دستور pgrep ببینید که چند پراسس systemd دارید و PIDهایشان را لیست کنید.
 
+```bash
+$ pgrep systemd
+1
+337
+372
+789
+790
+791
+1172
+2560
+10795
+```
+
+یا می توانید با اجرای دستوری مثل زیر ببینید که هرکدام از پراسس های systemd مربوط به چه کاری است:
+```bash
+$ for pid in $(pgrep systemd); do ps -o pid,comm $pid;echo ""; done
+    PID COMMAND
+      1 systemd
+
+    PID COMMAND
+    337 systemd-journal
+
+    PID COMMAND
+    372 systemd-udevd
+
+    PID COMMAND
+    789 systemd-oomd
+
+    PID COMMAND
+    790 systemd-resolve
+
+    PID COMMAND
+    791 systemd-timesyn
+
+    PID COMMAND
+   1172 systemd-logind
+
+    PID COMMAND
+   2560 systemd
+
+```
+همانطور که میبینید چندین پراسس systemd درحال اجرا هستند. حال فرض کنید که یک پراسس یتیم درست می کنیم و میخواهیم ببینیم توسط چه کسی به سرپرستی گرفته می شود. برای این منظور کد C زیر را اجرا می کنیم
+```C
+#include <unistd.h>
+#include <stdio.h>
+
+int main()
+{
+
+    printf("starting...\n");
+
+    if (fork() == 0)
+    {
+        printf("Child PID: %d\n",getpid());
+        printf("Child PPID: %d\n",getppid());
+        printf("sleeping till the parent die:(\n");
+        sleep(5);
+        printf("Child new PPID: %d\n",getppid());
+    }
+    else
+    {
+        printf("Parent PID: %d\n",getpid());
+    }
+
+    return 0;
+}
+```
+
+```bash
+$ gcc main.c
+$ ./a.out
+starting...
+Parent PID: 13688
+Child PID: 13689
+Child PPID: 13688
+sleeping till the parent die:(
+$ 
+Child new PPID: 2560
+```
+
+حالا اگر به پراسس 2560 نگاه کنیم خواهیم دید که یک systemd است:
+
+```bash
+$ ps -o comm 2560
+COMMAND
+systemd
+```
+
+می توانید به
+[این](https://stackoverflow.com/questions/77070933/why-are-orphaned-child-processes-not-adopted-by-pid-1-in-linux-like-it-is-claim)
+پرسش در stackoverflow مراجعه کنید.
 
 ادامه دارد ...
